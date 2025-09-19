@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardAction,
@@ -12,11 +14,61 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import { Heart, MessageCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
+import MarkdownRenderer from "./markdown-renderer";
+import { Post } from "@/lib/interfaces";
 
-export default function PostCard({ post }: { post: any }) {
+export default function PostCard({ post }: { post: Post }) {
+  const { data: session } = useSession();
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(post._count.likes);
+  const [likeLoading, setLikeLoading] = useState(true);
 
-    const liked = true; // Replace with actual liked state
-    const likeLoading = false; // Replace with actual loading state
+  useEffect(() => {
+    const fetchLikeStatus = async () => {
+      if (!session?.user?.id) {
+        setLikeLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/posts/${post.id}/like-status`);
+        if (response.ok) {
+          const data = await response.json();
+          setLiked(data.liked);
+        }
+      } catch (error) {
+        console.error("Failed to fetch like status:", error);
+      } finally {
+        setLikeLoading(false);
+      }
+    };
+
+    fetchLikeStatus();
+  }, [post.id, session?.user?.id]);
+
+  const handleLike = async () => {
+    if (!session) return;
+
+    try {
+      const response = await fetch(`/api/posts/${post.id}/like`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      setLiked(data.liked);
+      setLikeCount((prev) => (data.liked ? prev + 1 : prev - 1));
+    } catch (error) {
+      console.error("Failed to toggle like:", error);
+    }
+  };
+
+  // const content = showFullContent
+  //   ? post.content
+  //   : post.content.slice(0, 200) + (post.content.length > 200 ? "..." : "");
+  const content =
+    post.content.slice(0, 200) + (post.content.length > 200 ? "..." : "");
+
   return (
     <Card>
       <CardHeader>
@@ -39,13 +91,15 @@ export default function PostCard({ post }: { post: any }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p>Card Content</p>
+        <MarkdownRenderer content={content} />
       </CardContent>
       <CardFooter className="flex items-center space-x-4">
         <Button
           variant="ghost"
           size="sm"
           className="flex items-center space-x-1"
+          onClick={handleLike}
+          disabled={!session}
         >
           <Heart
             className={`h-4 w-4 ${
@@ -56,15 +110,15 @@ export default function PostCard({ post }: { post: any }) {
                 : ""
             }`}
           />
-          <span>10</span>
+          <span>{likeCount}</span>
         </Button>
         <Button
           variant="ghost"
           size="sm"
           className="flex items-center space-x-1"
         >
-          <MessageCircle className="h-4 w-4"/>
-          <span>4</span>
+          <MessageCircle className="h-4 w-4" />
+          <span>{post._count.comments}</span>
         </Button>
       </CardFooter>
     </Card>

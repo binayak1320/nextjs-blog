@@ -1,14 +1,36 @@
+"use client";
+
 import AuthButton from "@/components/auth-button";
 import PostCard from "@/components/post-card";
 import { Button } from "@/components/ui/button";
-import { dummyPosts } from "@/dummy-post";
+import { Post } from "@/lib/interfaces";
 import { PlusCircle } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  const isAdmin = true; // Replace with actual admin check logic
-  const loading = false; // Replace with actual loading state
-  const posts = dummyPosts; // Replace with actual posts data
+  const { data: session } = useSession();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch("/api/posts");
+      const data = await response.json();
+      setPosts(data);
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const isAdmin = session?.user?.role === "ADMIN";
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -47,7 +69,7 @@ export default function Home() {
         ) : (
           <div className="space-y-6">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} /> 
+              <PostCard key={post.id} post={post} />
             ))}
           </div>
         )}
