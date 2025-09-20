@@ -24,18 +24,17 @@ export default function CommentSection({ postId }: { postId: string }) {
   const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments`);
+        const data = await response.json();
+        setComments(data);
+      } catch (error) {
+        console.error("Failed to fetch comments:", error);
+      }
+    };
     fetchComments();
   }, [postId]);
-
-  const fetchComments = async () => {
-    try {
-      const response = await fetch(`/api/posts/${postId}/comments`);
-      const data = await response.json();
-      setComments(data);
-    } catch (error) {
-      console.error("Failed to fetch comments:", error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
