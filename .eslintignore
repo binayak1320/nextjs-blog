@@ -1,6 +1,0 @@
-# .eslintignore
-
-app/generated/
-app/generated/**/*.js
-app/generated/**/*.ts
-/node_modules
