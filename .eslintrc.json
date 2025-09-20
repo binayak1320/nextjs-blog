@@ -1,5 +1,6 @@
 {
   "extends": ["next/core-web-vitals"],
+  "ignorePatterns": ["app/generated/"],
   "rules": {
     // Disable rules that conflict with auto-generated code
     "@typescript-eslint/no-require-imports": "off",
