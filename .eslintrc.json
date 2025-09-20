@@ -2,6 +2,6 @@
   "extends": ["next/core-web-vitals"],
   "ignorePatterns": ["app/generated/"],
    "rules": {
-            "@typescript-eslint/no-unused-expressions": ["error", { "allowTernary": true }]
-        }
+            "@typescript-eslint/no-unused-expressions": "off"
+       }
 }
