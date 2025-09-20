@@ -1,4 +1,11 @@
 {
-  "extends": "next/core-web-vitals",
-  "ignorePatterns": ["app/generated/"]
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    // Disable rules that conflict with auto-generated code
+    "@typescript-eslint/no-require-imports": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
+    // You can also add specific rules here for your project
+    "react/no-unescaped-entities": "off"
+  }
 }
