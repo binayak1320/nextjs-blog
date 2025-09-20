@@ -18,7 +18,13 @@ import { useSession } from "next-auth/react";
 import MarkdownRenderer from "./markdown-renderer";
 import { Post } from "@/lib/interfaces";
 
-export default function PostCard({ post }: { post: Post }) {
+export default function PostCard({
+  post,
+  showFullContent = false,
+}: {
+  post: Post;
+  showFullContent?: boolean;
+}) {
   const { data: session } = useSession();
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post._count.likes);
@@ -63,11 +69,9 @@ export default function PostCard({ post }: { post: Post }) {
     }
   };
 
-  // const content = showFullContent
-  //   ? post.content
-  //   : post.content.slice(0, 200) + (post.content.length > 200 ? "..." : "");
-  const content =
-    post.content.slice(0, 200) + (post.content.length > 200 ? "..." : "");
+  const content = showFullContent
+    ? post.content
+    : post.content.slice(0, 200) + (post.content.length > 200 ? "..." : "");
 
   return (
     <Card>
@@ -84,10 +88,14 @@ export default function PostCard({ post }: { post: Post }) {
             </p>
           </div>
         </div>
-        <CardTitle className="mt-4 text-lg">
-          <Link href={`/posts/${post.id}`} className="hover:underline">
-            {post.title}
-          </Link>
+        <CardTitle className="text-xl">
+          {showFullContent ? (
+            post.title
+          ) : (
+            <Link href={`/posts/${post.id}`} className="hover:underline">
+              {post.title}
+            </Link>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>

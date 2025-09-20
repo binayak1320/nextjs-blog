@@ -2,24 +2,35 @@ import prisma from "@/lib/prisma";
 import { requireAdmin } from "@/lib/utils/auth";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const posts = await prisma.post.findMany({
-      where: { published: true },
+    const { searchParams } = new URL(request.url);
+    const searchQuery = searchParams.get("q") || "";
+
+    const queryOptions: Parameters<typeof prisma.post.findMany>[0] = {
+      where: {
+        published: true,
+      },
       include: {
-        author: {
-          select: { name: true, image: true },
-        },
-        _count: {
-          select: { comments: true, likes: true },
-        },
+        author: { select: { name: true, image: true } },
+        _count: { select: { comments: true, likes: true } },
       },
       orderBy: { createdAt: "desc" },
-    })
+    };
 
-    return NextResponse.json(posts)
-  } catch {
-    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 })
+    if (searchQuery) {
+      queryOptions.where!.OR = [
+        { title: { contains: searchQuery, mode: "insensitive" } },
+        { content: { contains: searchQuery, mode: "insensitive" } },
+      ];
+    }
+
+    const posts = await prisma.post.findMany(queryOptions);
+
+    return NextResponse.json(posts);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Failed to fetch posts" }, { status: 500 });
   }
 }
 

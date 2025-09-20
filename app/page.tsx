@@ -2,6 +2,7 @@
 
 import AuthButton from "@/components/auth-button";
 import PostCard from "@/components/post-card";
+import { PostSearch } from "@/components/post-search";
 import { Button } from "@/components/ui/button";
 import { Post } from "@/lib/interfaces";
 import { PlusCircle } from "lucide-react";
@@ -18,9 +19,12 @@ export default function Home() {
     fetchPosts();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (query = "") => {
     try {
-      const response = await fetch("/api/posts");
+      const url = query
+        ? `/api/posts?q=${encodeURIComponent(query)}`
+        : "/api/posts";
+      const response = await fetch(url);
       const data = await response.json();
       setPosts(data);
     } catch (error) {
@@ -29,6 +33,11 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const handleSearch = (query: string) => {
+    fetchPosts(query);
+  };
+
   const isAdmin = session?.user?.role === "ADMIN";
 
   return (
@@ -52,12 +61,16 @@ export default function Home() {
         </div>
       </header>
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="max-w-2xl mx-auto mb-12">
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-4">Welcome to Simple Blog</h1>
             <p className="text-muted-foreground">
               A clean, functional blog focused on great content
             </p>
+          </div>
+          {/* 🔍 Search Bar */}
+          <div className="mt-8">
+            <PostSearch onSearch={handleSearch} />
           </div>
         </div>
         {loading ? (
